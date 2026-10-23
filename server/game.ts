@@ -8,7 +8,7 @@ export const comparisonValue=(c:Card)=>c.rank===0?RULES.jokerValue:c.rank;
 export class Game {
  publicHands=new Set<string>();
  drawScene?:{prompt:Prompt;selected:string;expires:number};
- id=randomUUID();draws:{seq:number;from:string;to:string;revision:number;position:string;card:Card}[]=[];drawSeq=0;motionSeq=0;movements:{seq:number;from:string;to:string;revision:number;position:string;card:Card}[]=[];
+ id=randomUUID();draws:{seq:number;from:string;to:string;revision:number;position:string;card:Card}[]=[];drawSeq=0;motionSeq=0;movements:{seq:number;from:string;to:string;revision:number;position:string;card:Card}[]=[];redealSeq=0;
  players:Player[];discard:Card[]=[];trows=shuffle(Array.from({length:TROWS.length*2},(_,i)=>({id:i,effect:Math.floor(i/2)})));used:{id:number;effect:number}[]=[];
  turn=0;direction=Math.random()<.5?1:-1;effect=-1;prompt:Prompt|null=null;revision=0;deadline=0;revealing=false;ended=false;logs:string[]=[];
  iterator:Generator<Prompt,void,string>|null=null;
@@ -21,7 +21,7 @@ export class Game {
  swap(a:Player,ca:Card,b:Player,cb:Card){this.transfer(a,b,ca.id);this.transfer(b,a,cb.id);}
  matches(p:Player,c:Card){return p.hand.some(x=>pairable(x,c));}
  swapHands(a:Player,b:Player){[a.hand,b.hand]=[b.hand,a.hand];}
- redistribute(){const alive=this.alive(),cards=shuffle(alive.flatMap(x=>x.hand));alive.forEach(x=>x.hand=[]);cards.forEach((c,i)=>alive[i%alive.length].hand.push(c));}
+ redistribute(){const alive=this.alive(),cards=shuffle(alive.flatMap(x=>x.hand));alive.forEach(x=>x.hand=[]);cards.forEach((c,i)=>alive[i%alive.length].hand.push(c));this.redealSeq++;}
  matchingCards(p:Player){if(p.blocked)return [];const result:Card[]=[];for(let rank=RULES.jokersPair?0:1;rank<=13;rank++){const cards=p.hand.filter(c=>c.rank===rank);result.push(...cards.slice(0,cards.length-cards.length%2));}return result;}
  removeConfirmedPairs(p:Player){const ids=new Set(this.matchingCards(p).map(c=>c.id));this.discard.push(...p.hand.filter(c=>ids.has(c.id)));p.hand=p.hand.filter(c=>!ids.has(c.id));}
  clean(){for(const p of this.players){if(p.blocked)continue;for(let rank=RULES.jokersPair?0:1;rank<=13;rank++){let cards=p.hand.filter(c=>c.rank===rank);while(cards.length>=2){const ids=cards.splice(0,2).map(c=>c.id);this.discard.push(...p.hand.filter(c=>ids.includes(c.id)));p.hand=p.hand.filter(c=>!ids.includes(c.id));}}}const rank=this.players.filter(p=>p.rank!==undefined).length+1;for(const p of this.players)if(!p.hand.length&&p.rank===undefined){p.rank=rank;this.log(`${p.name} 님 ${rank}위!`);} }
@@ -67,6 +67,8 @@ export const EFFECTS:Record<number,Effect>={
  20:function*(g,p){yield* g.normal(p);const targets=shuffle(g.alive().filter(x=>x!==p));for(const target of targets){if(p.hand.length<=1)break;const id=yield* g.ask(p,'give',`${target.name} 님에게 한 장 나누기`,p.hand.map(c=>({key:c.id,label:'나누기',card:c})));g.transfer(p,target,id);}},
  21:function*(g,p){for(const target of g.alive().filter(x=>x!==p))yield* g.pick(p,target);},
  22:conditional(c=>![1,11,12,13].includes(c.rank)),
- 23:function*(g,p){if(p.hand.length===1&&p.hand[0].rank===0){const target=g.next(p);if(target!==p)g.transfer(p,target,p.hand[0].id);return;}const eligible=p.hand.filter(c=>c.rank!==0&&(p.hand.some(x=>pairable(c,x))||g.alive().some(x=>x!==p&&x.hand.some(h=>pairable(c,h)))));if(!eligible.length){yield* g.normal(p);return;}const id=yield* g.ask(p,'keep','짝으로 버릴 내 카드 한 장을 선택하세요',eligible.map(c=>({key:c.id,label:'짝으로 내기',card:c})));const card=p.hand.find(c=>c.id===id)!;let mate=p.hand.find(c=>pairable(card,c));if(!mate){const owner=g.alive().find(x=>x!==p&&x.hand.some(c=>pairable(card,c)));if(owner){mate=owner.hand.find(c=>pairable(card,c))!;g.transfer(owner,p,mate.id);}}if(mate){const ids=new Set([card.id,mate.id]);g.discard.push(...p.hand.filter(c=>ids.has(c.id)));p.hand=p.hand.filter(c=>!ids.has(c.id));}}
+ 23:function*(g,p){if(p.hand.length===1&&p.hand[0].rank===0){const target=g.next(p);if(target!==p)g.transfer(p,target,p.hand[0].id);return;}const eligible=p.hand.filter(c=>c.rank!==0&&(p.hand.some(x=>pairable(c,x))||g.alive().some(x=>x!==p&&x.hand.some(h=>pairable(c,h)))));if(!eligible.length){yield* g.normal(p);return;}const id=yield* g.ask(p,'keep','짝으로 버릴 내 카드 한 장을 선택하세요',eligible.map(c=>({key:c.id,label:'짝으로 내기',card:c})));const card=p.hand.find(c=>c.id===id)!;let mate=p.hand.find(c=>pairable(card,c));if(!mate){const owner=g.alive().find(x=>x!==p&&x.hand.some(c=>pairable(card,c)));if(owner){mate=owner.hand.find(c=>pairable(card,c))!;g.transfer(owner,p,mate.id);}}if(mate){const ids=new Set([card.id,mate.id]);g.discard.push(...p.hand.filter(c=>ids.has(c.id)));p.hand=p.hand.filter(c=>!ids.has(c.id));}},
+ 24:function*(g,p){const candidates:{owner:Player;card:Card}[]=[];for(const target of g.alive().filter(x=>x!==p)){const id=yield* g.ask(p,'draw',`${target.name} 님에게서 확인할 한 장을 고르세요`,target.hand.map(c=>({key:c.id,label:'확인할 카드'})),target.id);const card=target.hand.find(c=>c.id===id);if(card)candidates.push({owner:target,card});}if(!candidates.length)return;const id=yield* g.ask(p,'draft','확인한 카드 중 가져올 한 장을 선택하세요',candidates.map(x=>({key:x.card.id,label:`${x.owner.name} 님의 카드`,card:x.card})));const chosen=candidates.find(x=>x.card.id===id)!;g.transfer(chosen.owner,p,id);},
+ 25:function*(g,p){const target=g.next(p);if(target===p)return;const amount=Math.min(randomInt(1,4),target.hand.length);const cards=shuffle([...target.hand]).slice(0,amount);g.log(`${p.name} · 수전증으로 ${amount}장을 한 번에 가져옵니다`);for(const c of cards)g.transfer(target,p,c.id);}
 
 };
