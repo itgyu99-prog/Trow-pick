@@ -3,7 +3,7 @@ import type {DrawScene} from '../shared/types.js';
 
 // Opening Night exposes only its user's hand to the room, for the reveal phase.
 export function publiclyVisibleHand(game:Game|undefined,playerId:string){
- if(!game||(!game.revealing&&!game.ended))return undefined;
+ if(!game||(!game.publicHands.has(playerId)&&!game.ended))return undefined;
  return game.players.find(p=>p.id===playerId)?.hand;
 }
 
