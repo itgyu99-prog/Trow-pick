@@ -28,5 +28,8 @@ export function chooseBotAction(prompt:Prompt,hand:Card[]):string {
   const safe=prompt.choices.filter(c=>c.card&&c.card.rank!==0);
   return random(safe.length?safe:prompt.choices).key;
  }
+ if(prompt.kind==='compare-pick') {
+  return [...prompt.choices].sort((a,b)=>(b.card?.rank??0)-(a.card?.rank??0))[0].key;
+ }
  return random(prompt.choices).key;
 }

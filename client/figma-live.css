@@ -45,3 +45,27 @@ body{background:var(--cream);color:var(--ink)}header{background:var(--paper);hei
 @media(max-width:760px){.game-page .table-decks{grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);column-gap:2px;padding-inline:7px}.game-page .current-throw .throw-card:not(.small){width:108px;height:153px;padding:9px}.game-page .current-throw .throw-card strong{font-size:15px}.game-page .current-throw .throw-icon{width:45px;height:45px;margin:9px 0 3px;font-size:24px}.game-page .trow-reveal-content>.throw-card{width:150px;height:205px}.game-page .trow-reveal-content .throw-card strong{font-size:19px}}@media(max-width:760px) and (max-height:740px){.game-page .current-throw .throw-card:not(.small){width:94px;height:132px}.game-page .current-throw .throw-card strong{font-size:13px}.game-page .current-throw .throw-icon{width:36px;height:36px;margin:5px 0 0;font-size:21px}}
 
 .decision-choice>div{overflow:auto;max-width:100%;padding:8px}.decision-choice .btn:has(.draft-card-face){display:flex;flex-direction:column;justify-content:space-between;min-width:80px;min-height:120px;padding:8px;background:#fffdf8;font-size:10px;color:var(--ink)}.draft-card-face{display:flex;flex-direction:column;gap:8px;width:100%;font-size:20px;text-align:left}.draft-card-face strong{font-size:34px;text-align:center}
+
+.make-field{position:relative}
+.compare-stage{position:absolute;inset:8px;z-index:14;display:grid;place-items:center;padding:12px;background:#082d22d9;border:1px solid #d8c87599;border-radius:18px;backdrop-filter:blur(5px);animation:compare-shade-in .28s ease-out both}
+.compare-box{width:min(100%,720px);padding:clamp(16px,3vw,30px);border:1px solid #eadc9a;border-radius:20px;background:#fff9e9;color:var(--green);text-align:center;box-shadow:0 18px 54px #061e18a8;animation:compare-box-in .42s cubic-bezier(.2,.8,.25,1) both}
+.compare-eyebrow{display:block;color:#71835d;font-size:11px;font-weight:800;letter-spacing:.12em}
+.compare-box h2{margin:7px 0 16px;font-size:clamp(20px,3vw,30px)}
+.compare-cards{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(12px,5vw,50px)}
+.compare-cards:before{content:'VS';grid-column:2;grid-row:1;color:#b29b3d;font-size:18px;font-weight:900}
+.compare-contestant{grid-row:1;display:flex;flex-direction:column;align-items:center;gap:7px;color:#516750}
+.compare-contestant.compare-left{grid-column:1;animation:compare-card-left .62s cubic-bezier(.2,.8,.25,1) both}
+.compare-contestant.compare-right{grid-column:3;animation:compare-card-right .62s cubic-bezier(.2,.8,.25,1) both}
+.compare-contestant .playing-card{width:clamp(74px,12vw,112px);height:clamp(108px,17vw,162px);pointer-events:none}
+.compare-contestant>b{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compare-contestant>strong{font-size:15px}
+.compare-contestant.winner{color:#986f00}
+.compare-contestant.winner .playing-card{box-shadow:0 0 0 4px #ffd848,0 0 34px #ffd848b0;animation:compare-winner-pulse .9s ease-in-out infinite alternate}
+.compare-box>p{margin:17px 0 4px;color:#28533f;font-size:clamp(15px,2.2vw,22px);font-weight:900}
+.compare-box>small{color:#71835d;font-size:12px}
+@keyframes compare-shade-in{from{opacity:0}to{opacity:1}}
+@keyframes compare-box-in{from{opacity:0;transform:translateY(15px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes compare-card-left{from{opacity:0;transform:translateX(-70px) rotate(-16deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes compare-card-right{from{opacity:0;transform:translateX(70px) rotate(16deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes compare-winner-pulse{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+@media(max-width:680px){.compare-stage{inset:5px;padding:7px}.compare-box{padding:14px 10px;border-radius:14px}.compare-cards{gap:10px}.compare-cards:before{font-size:14px}.compare-contestant .playing-card{width:64px;height:94px}.compare-contestant>b{font-size:12px}.compare-contestant>strong{font-size:13px}.compare-box>small{font-size:10px}}

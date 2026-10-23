@@ -13,7 +13,8 @@ export function visibleDrawScene(game:Game,viewer:string):DrawScene|null{
  const held=game.drawScene&&game.drawScene.expires>Date.now()?game.drawScene:undefined;
  const prompt=held?.prompt??(game.prompt?.kind==='draw'?game.prompt:undefined);
  if(!prompt)return null;
+ const facesVisible=viewer===prompt.actor||!!prompt.target&&game.publicHands.has(prompt.target);
  return {actor:prompt.actor,target:prompt.target,kind:'draw',message:prompt.message,revision:prompt.revision,selected:held?.selected,
-  choices:prompt.choices.map((c,i)=>viewer===prompt.actor?{...c,key:String(i)}:{key:String(i),label:'뒤집힌 카드'})};
+  choices:prompt.choices.map((c,i)=>facesVisible?{...c,key:String(i)}:{key:String(i),label:'뒤집힌 카드'})};
 }
 
