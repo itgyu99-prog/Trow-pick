@@ -1,0 +1,142 @@
+/* Fit the table to the usable phone screen; large lists scroll in their own rows. */
+@media (max-width:680px), (max-width:950px) and (max-height:500px) {
+ body:has(.room) {overflow:hidden;overscroll-behavior:none}
+ #root:has(.room) {height:100vh;height:100dvh;display:grid;grid-template-rows:48px minmax(0,1fr);padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);overflow:hidden}
+ #root:has(.room)>header {width:100%;height:48px;padding:0 12px;gap:8px}
+ #root:has(.room)>footer {display:none}
+ #root:has(.room) .brand {font-size:26px;gap:6px}
+ #root:has(.room) .brand>span {font-size:17px}
+ #root:has(.room) .brand small {display:none}
+ #root:has(.room) header nav {gap:4px}
+ #root:has(.room) header .text {padding:8px;font-size:13px}
+ #root:has(.room) header .icon {width:34px;height:34px}
+ .room,.room:has(.my-hand) {width:100%;height:100%;min-height:0;padding:5px 8px 8px;margin:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:6px;overflow:hidden}
+ .room:has(.my-hand) {grid-template-rows:auto minmax(0,1fr) auto}
+ .room-top {margin:0;min-height:34px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px}
+ .room-top>div:first-child {min-width:0}
+ .room-top .eyebrow {display:none}
+ .room-top h2 {font-size:0;margin:0;letter-spacing:0;white-space:nowrap}
+ .room-top .code {font-size:14px;margin:0;padding:7px 9px;display:inline-block}
+ .room-top .actions {width:auto;gap:4px;flex-shrink:0}
+ .room-top .secondary,.room-top .text {font-size:13px;padding:8px;min-height:34px}
+ .game-layout {height:100%;min-height:0;min-width:0;display:block}
+ .game-layout>aside {display:none}
+ .table {height:100%;min-height:0;min-width:0;padding:8px;border-radius:16px;display:grid;grid-template-rows:20px 66px minmax(112px,.85fr) minmax(128px,1fr);gap:6px;overflow:hidden}
+ .table-label {font-size:13px;line-height:20px;white-space:nowrap}
+ .seats {margin:0;padding:2px 2px 4px;gap:6px;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;min-width:0;scrollbar-width:thin;overscroll-behavior:contain}
+ .seat {position:relative;min-width:94px;max-width:120px;flex:0 0 94px;display:grid;grid-template-columns:24px minmax(0,1fr);grid-template-rows:1fr 1fr;align-items:center;gap:2px 5px;padding:6px;border-radius:10px;text-align:left;overflow:hidden}
+ .seat .avatar {width:24px;height:26px;grid-row:1/3;font-size:14px;border-radius:8px}
+ .seat b {font-size:13px;line-height:17px;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}
+ .seat small {font-size:12px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .seat.active {box-shadow:none;background:#e1ecd5}
+ .seat.active:before {content:none}
+ .mini-hand {grid-column:1/-1;display:flex;flex-wrap:nowrap;overflow-x:auto;max-height:22px}
+ .seats:has(.mini-hand) {align-items:stretch}
+ .seat:has(.mini-hand) {grid-template-rows:16px 16px 20px}
+ .mini-hand span {font-size:12px;padding:1px 3px;white-space:nowrap}
+ .effect {width:100%;max-width:none;min-height:0;overflow:auto;margin:0;padding:4px 4px 4px 63px;position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;text-align:left;overscroll-behavior:contain}
+ .effect .effect-art {position:absolute;left:3px;top:50%;translate:0 -50%;width:48px;height:64px;font-size:30px;border-radius:8px;margin:0;box-shadow:3px 3px 0 #6c735020}
+ .effect .trow-deck {width:48px;height:70px;border-width:3px;gap:3px}
+ .trow-deck small {font-size:6px;letter-spacing:0}
+ .effect .eyebrow {font-size:11px;letter-spacing:.3px;line-height:15px;justify-content:flex-start}
+ .effect h2 {font-size:20px;line-height:1.2;margin:0;letter-spacing:-.6px}
+ .effect p {font-size:14px;line-height:1.4;margin:0}
+ .turn-pill {font-size:13px;line-height:17px;padding:3px 9px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .choice-panel {min-height:0;min-width:0;padding:8px;border-radius:12px;display:flex;flex-direction:column;justify-content:center;gap:6px;overflow-y:auto;overscroll-behavior:contain}
+ .choice-panel h3 {font-size:15px;line-height:1.35;margin:0;flex-shrink:0}
+ .choice-panel .choices {min-height:44px;flex-shrink:0;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:7px;padding:4px 3px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;overscroll-behavior:contain}
+ .choices:has(.finish-turn) {justify-content:center}
+ .choices .secondary {font-size:15px;padding:10px 14px;flex-shrink:0;min-height:44px}
+ .choice-panel>small {font-size:12px;line-height:16px;margin:0;flex-shrink:0}
+ .card {width:60px;height:84px;font-size:17px;padding:5px;border-radius:7px}
+ .card strong {font-size:26px;line-height:1}
+ .card .corner {font-size:13px;line-height:1}
+ .card.back {border-width:3px;gap:3px}
+ .card.back span {font-size:29px}
+ .card.back small {font-size:7px}
+ .finish-turn {font-size:16px;line-height:21px;min-height:44px;padding:11px 14px}
+ .waiting {gap:5px;font-size:25px}
+ .waiting b {font-size:15px;line-height:1.4}
+ .waiting small {font-size:13px}
+ .my-hand {position:static;transform:none;width:100%;min-width:0;margin:0;padding:7px 9px;border-radius:12px;box-shadow:0 -2px 12px #243c3010;display:grid;grid-template-rows:auto auto;gap:3px;overflow:hidden}
+ .my-hand>div:first-child {display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0}
+ .my-hand h3,.my-hand h3 span {font-size:14px;margin:0;line-height:20px}
+ .my-hand p {font-size:12px;line-height:16px;max-width:210px;margin:0;text-align:right}
+ .my-hand .hand-cards {min-height:94px;min-width:0;padding:4px;gap:7px;align-items:center;scrollbar-width:thin;overscroll-behavior:contain}
+ .hand-cards>span {font-size:14px}
+ .draw-caption {top:52px;font-size:14px;padding:7px 12px}
+ .result {padding:8px 2px;font-size:14px;flex-shrink:0}
+ .result span {font-size:12px}
+ .choice-panel>h2 {font-size:20px;margin:0;flex-shrink:0}
+ .choice-panel .actions {margin:4px 0 0;flex-wrap:wrap;flex-shrink:0}
+ .choice-panel .actions .primary,.choice-panel .actions .secondary {font-size:14px;min-height:40px;padding:10px 14px}
+ .lobby {min-height:0;height:100%;display:block;border-radius:16px;overflow:hidden}
+ .lobby-visual {display:none}
+ .lobby-list {height:100%;min-height:0;padding:16px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+ .lobby-list h2 {font-size:22px;margin:0}
+ .lobby-list .eyebrow {font-size:13px}
+ .lobby-list>p {font-size:14px;margin:0;line-height:1.5}
+ .members {flex:1;min-height:0;max-height:none;margin:0;overflow-y:auto}
+ .members>div {padding:8px 0;font-size:14px;gap:7px}
+ .members small {font-size:12px}
+ .bot-controls {margin:0;gap:8px;flex-shrink:0}
+ .bot-controls small {font-size:12px}
+ .lobby-list .primary {font-size:17px;min-height:46px;margin:0;flex-shrink:0}
+ .lobby-list .hint {font-size:12px}
+ .modal-bg {padding:10px}
+ .modal {max-height:calc(100dvh - 20px);padding:20px}
+ .toast {top:6px;font-size:13px;padding:10px 14px}
+}
+
+/* Short phones keep actions visible without shrinking readable card numbers. */
+@media (max-width:680px) and (max-height:680px) {
+ #root:has(.room) {grid-template-rows:42px minmax(0,1fr)}
+ #root:has(.room)>header {height:42px}
+ .room,.room:has(.my-hand) {gap:4px;padding:3px 6px 5px}
+ .room-top {min-height:30px}
+ .room-top .secondary,.room-top .text {min-height:30px;padding:6px;font-size:12px}
+ .room-top .code {padding:5px 8px}
+ .table {padding:6px;grid-template-rows:18px 52px minmax(88px,.75fr) minmax(118px,1fr);gap:4px}
+ .table-label {line-height:18px;font-size:12px}
+ .seat {padding:4px;gap:0 4px}
+ .seat .avatar {width:22px;height:24px}
+ .effect {padding-left:51px;gap:2px}
+ .effect .effect-art {width:38px;height:53px;font-size:25px}
+ .effect h2 {font-size:18px}
+ .effect p {font-size:13px}
+ .effect .eyebrow {font-size:10px;line-height:13px}
+ .turn-pill {font-size:12px;line-height:15px;padding:2px 7px}
+ .choice-panel {padding:6px;gap:4px}
+ .choice-panel h3 {font-size:14px}
+ .my-hand {padding:5px 8px;gap:1px}
+ .my-hand p {display:none}
+ .my-hand .hand-cards {min-height:82px;padding:3px}
+ .card {width:54px;height:74px;font-size:16px}
+ .card strong {font-size:24px}
+ .card.back span {font-size:25px}
+ .card.back small {font-size:6px}
+}
+
+/* A landscape phone uses the right column for the hand. */
+@media (max-width:950px) and (max-height:500px) and (orientation:landscape) {
+ #root:has(.room) {grid-template-rows:40px minmax(0,1fr)}
+ #root:has(.room)>header {height:40px}
+ .room:has(.my-hand) {grid-template-columns:minmax(0,1fr) 156px;grid-template-rows:32px minmax(0,1fr);gap:5px}
+ .room-top {grid-column:1/-1}
+ .game-layout {grid-column:1;grid-row:2}
+ .my-hand {grid-column:2;grid-row:2;grid-template-rows:auto minmax(0,1fr);padding:7px}
+ .my-hand>div:first-child {display:block}
+ .my-hand p {display:none}
+ .my-hand .hand-cards {display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;overflow-y:auto;overflow-x:hidden;min-height:0;height:100%;padding:4px;gap:5px}
+ .table {grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-rows:18px 52px minmax(0,1fr);gap:5px}
+ .table-label,.seats {grid-column:1/-1}
+ .effect {grid-column:1;grid-row:3;padding:5px;align-items:center;text-align:center;justify-content:center}
+ .effect .effect-art {position:static;translate:none;width:36px;height:46px;font-size:23px;margin:0 0 3px;flex-shrink:0}
+ .effect .eyebrow {font-size:10px}
+ .effect h2 {font-size:17px}
+ .effect p {font-size:13px}
+ .turn-pill {font-size:12px}
+ .choice-panel {grid-column:2;grid-row:3}
+ .card {width:54px;height:74px;font-size:16px}
+ .card strong {font-size:24px}
+}
