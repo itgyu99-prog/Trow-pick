@@ -18,7 +18,7 @@ export function DrawMotion({view,reduced,origin,onBusy,onPending}:{view:View|nul
   if(!game){seen.current={game:'',seq:0};setQueue([]);setFlight(null);return;}
   if(seen.current.game!==game.id){seen.current={game:game.id,seq:game.movements.at(-1)?.seq??0};setQueue([]);setFlight(null);return;}
   const fresh=game.movements.filter(e=>e.seq>seen.current.seq);
-  if(fresh.length){seen.current.seq=fresh.at(-1)!.seq;if(!motionReduced)setQueue(q=>[...q,...fresh]);}
+  if(fresh.length){seen.current.seq=fresh.at(-1)!.seq;if(!motionReduced)setQueue(q=>[...q,...fresh.filter(e=>e.to!=='discard')]);}
  },[view,motionReduced]);
  useLayoutEffect(()=>{onPending([...(flight?[flight]:[]),...queue].filter(e=>e.to===view?.me&&e.card).map(e=>e.card!));},[queue,flight,view?.me,onPending]);
  useEffect(()=>{if(motionReduced){setQueue([]);setFlight(null);}},[motionReduced]);
@@ -45,7 +45,7 @@ export function DrawMotion({view,reduced,origin,onBusy,onPending}:{view:View|nul
  },[queue,flight,origin]);
  useEffect(()=>{if(!flight)return;const timer=setTimeout(()=>setFlight(null),DRAW_MOTION_MS);return()=>clearTimeout(timer);},[flight]);
  if(!flight)return null;
- const card=flight.card,rank=card?['JK','A','2','3','4','5','6','7','8','9','10','J','Q','K'][card.rank]:'';
+ const card=flight.to==='discard'?undefined:flight.card,rank=card?['JK','A','2','3','4','5','6','7','8','9','10','J','Q','K'][card.rank]:'';
  const style={'--from-x':`${flight.start.x}px`,'--from-y':`${flight.start.y}px`,'--to-x':`${flight.end.x}px`,'--to-y':`${flight.end.y}px`,'--card-width':`${flight.width}px`,'--card-height':`${flight.height}px`,'--half-width':`${flight.width/2}px`,'--half-height':`${flight.height/2}px`} as React.CSSProperties;
  return <div className="draw-overlay" aria-live="polite"><div key={flight.seq} className="flying-card" style={style}><div className={`flying-flip ${card?'show-face':''}`}><div className="flight-back">✳<small>TROW PICK</small></div><div className={`flight-front ${card&&['♥','♦'].includes(card.suit)?'red':''}`}><span>{rank}</span><strong>{card?.suit}</strong></div></div></div><div className="draw-caption">{flight.label}</div></div>;
 }
