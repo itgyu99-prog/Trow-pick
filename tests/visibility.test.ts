@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Game,deck} from '../server/game.js';
 import {publiclyVisibleHand,visibleDrawScene} from '../server/visibility.js';
 
-test('Opening Night shows only the effect user and closes after two seconds',()=>{
+test('Opening Night shows every hand and closes after two seconds',()=>{
  const g=new Game(Array.from({length:3},(_,i)=>({id:String(i),name:'Player '+i})));
  const hands=[['♠1','♠2'],['♥3','♥4'],['♣5','JOKER_1']];
  g.players.forEach((p,i)=>{p.hand=hands[i].map(id=>deck().find(c=>c.id===id)!);p.rank=undefined;});
@@ -13,7 +13,7 @@ test('Opening Night shows only the effect user and closes after two seconds',()=
  g.act('0','reveal',g.prompt!.revision);
  assert.equal(g.prompt?.kind,'reveal');assert.equal(g.revealing,true);
  assert.deepEqual(publiclyVisibleHand(g,'0'),g.players[0].hand);
- assert.equal(publiclyVisibleHand(g,'1'),undefined);assert.equal(publiclyVisibleHand(g,'2'),undefined);
+ assert.deepEqual(publiclyVisibleHand(g,'1'),g.players[1].hand);assert.deepEqual(publiclyVisibleHand(g,'2'),g.players[2].hand);
  assert.throws(()=>g.act('0','ok',g.prompt!.revision));
  g.tick(g.deadline-1);assert.equal(g.revealing,true);
  g.tick(g.deadline+1);assert.equal(g.revealing,false);assert.equal(publiclyVisibleHand(g,'0'),undefined);

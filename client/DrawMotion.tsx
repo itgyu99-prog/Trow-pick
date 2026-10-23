@@ -16,8 +16,8 @@ export function DrawMotion({view,reduced,origin,onBusy,onPending}:{view:View|nul
  useLayoutEffect(()=>{
   const game=view?.game;
   if(!game){seen.current={game:'',seq:0};setQueue([]);setFlight(null);return;}
-  if(seen.current.game!==game.id){seen.current={game:game.id,seq:game.draws.at(-1)?.seq??0};setQueue([]);setFlight(null);return;}
-  const fresh=game.draws.filter(e=>e.seq>seen.current.seq);
+  if(seen.current.game!==game.id){seen.current={game:game.id,seq:game.movements.at(-1)?.seq??0};setQueue([]);setFlight(null);return;}
+  const fresh=game.movements.filter(e=>e.seq>seen.current.seq);
   if(fresh.length){seen.current.seq=fresh.at(-1)!.seq;if(!motionReduced)setQueue(q=>[...q,...fresh]);}
  },[view,motionReduced]);
  useLayoutEffect(()=>{onPending([...(flight?[flight]:[]),...queue].filter(e=>e.to===view?.me&&e.card).map(e=>e.card!));},[queue,flight,view?.me,onPending]);
@@ -29,7 +29,7 @@ export function DrawMotion({view,reduced,origin,onBusy,onPending}:{view:View|nul
   const event=queue[0],v=latest.current;
   if(!v)return;
   const center=(element:Element|null):Origin=>{const r=element?.getBoundingClientRect();return r?{x:r.left+r.width/2,y:r.top+r.height/2}:{x:innerWidth/2,y:innerHeight/2};};
-  const seat=(id:string)=>document.querySelector(`[data-seat="${id}"]`);
+  const seat=(id:string)=>id==='discard'?document.querySelector('[data-discard]'):document.querySelector(`[data-seat="${id}"]`);
   const shownCard=document.querySelector(`[data-draw-revision="${event.revision}"][data-draw-position="${event.position}"]`);
   const start=event.to===v.me&&origin.current?origin.current:center(shownCard??(event.from===v.me?document.querySelector('[data-hand]'):seat(event.from)));
   const destination=event.to===v.me?document.querySelector(`[data-hand-card="${event.card?.id}"]`):seat(event.to);
@@ -38,7 +38,7 @@ export function DrawMotion({view,reduced,origin,onBusy,onPending}:{view:View|nul
   const cardRect=event.to===v.me?destination?.getBoundingClientRect():document.querySelector('.card')?.getBoundingClientRect();
   const width=cardRect?.width||84,height=cardRect?.height||120;
   origin.current=null;
-  setFlight({...event,start,end,width,height,label:`${v.players.find(p=>p.id===event.to)?.name??'플레이어'} 님이 한 장 뽑았어요`});
+  setFlight({...event,start,end,width,height,label:event.to==='discard'?'짝이 버림 더미로 이동해요':`${v.players.find(p=>p.id===event.from)?.name??''} → ${v.players.find(p=>p.id===event.to)?.name??''}`});
   setQueue(q=>q.slice(1));
   });
   return()=>cancelAnimationFrame(frame);

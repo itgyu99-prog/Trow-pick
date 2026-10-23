@@ -7,7 +7,7 @@ export const pairable=(a:Card,b:Card)=>a.id!==b.id&&a.rank===b.rank&&(a.rank!==0
 export const comparisonValue=(c:Card)=>c.rank===0?RULES.jokerValue:c.rank;
 export class Game {
  drawScene?:{prompt:Prompt;selected:string;expires:number};
- id=randomUUID();draws:{seq:number;from:string;to:string;revision:number;position:string;card:Card}[]=[];drawSeq=0;
+ id=randomUUID();draws:{seq:number;from:string;to:string;revision:number;position:string;card:Card}[]=[];drawSeq=0;motionSeq=0;movements:{seq:number;from:string;to:string;revision:number;position:string;card:Card}[]=[];
  players:Player[];discard:Card[]=[];trows=shuffle(Array.from({length:44},(_,i)=>({id:i,effect:Math.floor(i/2)})));used:{id:number;effect:number}[]=[];
  turn=0;direction=Math.random()<.5?1:-1;effect=-1;prompt:Prompt|null=null;revision=0;deadline=0;revealing=false;ended=false;logs:string[]=[];
  iterator:Generator<Prompt,void,string>|null=null;
@@ -36,14 +36,14 @@ export class Game {
   yield* this.ask(p,'finish',count?`짝 ${count}쌍 완성! 내 손패를 확인하고 턴을 넘겨주세요.`:'뽑기가 끝났어요. 내 손패를 확인하고 턴을 넘겨주세요.',[{key:'finish',label:count?'짝 버리고 턴 넘기기 →':'턴 넘기기 →'}]);
   this.clean();this.validate();if(this.terminal())return;const next=this.next(p);this.turn=this.players.indexOf(next);}
  startTurn(){if(this.ended||this.terminal())return;this.iterator=this.run();this.advance();}
- advance(value?:string){if(!this.iterator)return;const step=this.iterator.next(value!);this.validate();if(step.done){this.prompt=null;this.iterator=null;this.deadline=Date.now()+RULES.turnPauseMs;}else{this.prompt=step.value;this.deadline=Date.now()+(this.prompt.kind==='reveal'?RULES.revealMs:RULES.turnMs);}}
+ advance(value?:string){if(!this.iterator)return;const priorSeq=this.drawSeq;const before=new Map(this.players.flatMap(p=>p.hand.map(c=>[c.id,{owner:p.id,card:c}] as const)));const step=this.iterator.next(value!);const after=new Map(this.players.flatMap(p=>p.hand.map(c=>[c.id,p.id] as const)));for(const [id,old] of before){const dest=after.get(id)??'discard';if(dest!==old.owner)this.movements.push({seq:++this.motionSeq,from:old.owner,to:dest,revision:this.revision,position:'',card:old.card});}this.movements=this.movements.slice(-160);this.validate();if(step.done){this.prompt=null;this.iterator=null;this.deadline=Date.now()+RULES.turnPauseMs;}else{this.prompt=step.value;this.deadline=Date.now()+(this.prompt.kind==='reveal'?RULES.revealMs:RULES.turnMs);}}
  act(actor:string,key:string,revision:number){if(!this.prompt||this.prompt.actor!==actor||this.prompt.revision!==revision||this.prompt.kind==='reveal'||!this.prompt.choices.some(c=>c.key===key))throw Error('현재 선택할 수 없는 행동이에요.');this.advance(key);}
  tick(now=Date.now()){if(this.ended)return;if(now<this.deadline)return;if(this.prompt){if(this.prompt.kind==='reveal'){this.revealing=false;this.advance('ok');}else this.advance(this.prompt.choices[0].key);}else this.startTurn();}
 }
 type Effect=(g:Game,p:Player)=>Generator<Prompt,void,string>;
 function conditional(test:(c:Card,g:Game,p:Player,matched:boolean)=>boolean):Effect{return function*(g,p){const target=g.next(p);const c=yield* g.pick(p,target);if(c&&test(c,g,p,g.matches(p,c)))yield* g.pick(p,target);};}
 export const EFFECTS:Record<number,Effect>={
- 0:function*(g,p){const target=g.next(p),n=Math.ceil(target.hand.length/2);const row=target.hand.length===1?'0':yield* g.ask(p,'row','확인할 줄을 골라주세요',[{key:'0',label:'위쪽 줄'},{key:'1',label:'아래쪽 줄'}]);yield* g.pick(p,target,target.hand.slice(Number(row)*n,Number(row)*n+n),true);},
+ 0:function*(g,p){const target=g.next(p),n=Math.ceil(target.hand.length/2);const row=target.hand.length===1?'0':yield* g.ask(p,'row','확인할 줄을 골라주세요',[{key:'0',label:'위쪽 줄'},{key:'1',label:'아래쪽 줄'}],target.id);yield* g.pick(p,target,target.hand.slice(Number(row)*n,Number(row)*n+n),true);},
  1:function*(g,p){const c=yield* g.normal(p);if(c&&!g.matches(p,c))g.exchange(p,c,x=>g.matches(p,x));},
  2:conditional(()=>true),
  3:conditional(c=>c.rank%2===0),
@@ -57,7 +57,7 @@ export const EFFECTS:Record<number,Effect>={
  11:function*(g,p){const target=g.next(p),c=yield* g.pick(p,target);if(!c||!target.hand.length)return;const answer=yield* g.ask(p,'retry','뽑은 카드를 유지할까요?',[{key:'keep',label:'이 카드 유지',card:c},{key:'retry',label:'돌려주고 다시 뽑기'}]);if(answer==='retry'){g.transfer(p,target,c.id);yield* g.pick(p,target,target.hand.filter(x=>x.id!==c.id));}},
  12:function*(g,p){const target=g.next(p);yield* g.pick(p,target);const count=Math.min(2,p.hand.length);for(let i=0;i<count;i++){const id=yield* g.ask(p,'give',`건넬 카드 ${i+1}/${count}`,p.hand.map(c=>({key:c.id,label:'건네기',card:c})));g.transfer(p,target,id);}},
  13:function*(g,p){const c=yield* g.normal(p);if(c&&g.matches(p,c)&&!g.exchange(p,c,x=>!g.matches(p,x)))p.blocked=true;},
- 14:function*(g,p){g.revealing=true;yield* g.ask(p,'reveal',`${p.name} 님의 손패만 2초간 공개합니다`,[{key:'ok',label:'공개 중'}]);g.revealing=false;yield* g.normal(p);},
+ 14:function*(g,p){g.revealing=true;yield* g.ask(p,'reveal',`${p.name} 님이 모든 생존자의 손패를 2초간 공개합니다`,[{key:'ok',label:'공개 중'}]);g.revealing=false;yield* g.normal(p);},
  15:function*(g,p){const target=g.next(p),c=yield* g.pick(p,target);if(c&&g.matches(p,c)){g.transfer(p,target,c.id);yield* g.pick(p,target,RULES.reselectSame?undefined:target.hand.filter(x=>x.id!==c.id));}},
  16:function*(g,p){const id=yield* g.ask(p,'player','비교할 상대를 골라주세요',g.alive().filter(x=>x!==p).map(x=>({key:x.id,label:x.name})));const target=g.players.find(x=>x.id===id)!;const high=(x:Player)=>x.hand.reduce((a,b)=>comparisonValue(a)>comparisonValue(b)?a:b);const a=high(p),b=high(target),av=comparisonValue(a),bv=comparisonValue(b);g.log(`${p.name}: ${a.suit}${av} / ${target.name}: ${b.suit}${bv}`);if(av===bv)return;const from=av>bv?p:target,to=from===p?target:p;const keep=yield* g.ask(from,'keep','내게 남길 카드 한 장을 골라주세요',from.hand.map(c=>({key:c.id,label:'남기기',card:c})));for(const c of [...from.hand])if(c.id!==keep)g.transfer(from,to,c.id);},
  17:function*(g,p){const c=yield* g.normal(p);if(c&&c.rank!==0)g.exchange(p,c,x=>x.rank===0);},
